@@ -9,7 +9,7 @@ fi
 
 path=$1
 tail="${path#*/*/*/}"
-head="${path%/$tail}"
+head="${path%$tail}"
 echo "$head" "$tail"
 
 mkdir -p ${head} 
