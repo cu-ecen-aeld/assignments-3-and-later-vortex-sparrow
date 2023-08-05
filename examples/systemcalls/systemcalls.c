@@ -1,5 +1,7 @@
 #include "systemcalls.h"
-
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 /**
  * @param cmd the command to execute with system()
  * @return true if the command in @param cmd was executed
@@ -15,7 +17,12 @@ bool do_system(const char *cmd)
  *  Call the system() function with the command set in the cmd
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
-*/
+*/ 
+    int result = system(cmd);
+    if (result == -1)
+    {
+        return false;
+    }
 
     return true;
 }
@@ -47,7 +54,7 @@ bool do_exec(int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
 
 /*
  * TODO:
@@ -58,6 +65,21 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    pid_t pid;
+    pid = fork();
+    if (pid>0)
+        printf("Parent\n");
+    else if(!pid)
+        printf("Child\n");
+    else if(pid == -1)
+        perror("fork");
+
+    int ret = execv(command[0], command);
+    if (ret == -1)
+    {
+        perror("execvp");
+    }
+
 
     va_end(args);
 
@@ -82,7 +104,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+    //command[count] = command[count];
 
 
 /*
@@ -92,6 +114,24 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+    pid_t pid;
+    fflush(stdout);
+    pid = fork();
+    if (pid>0)
+        printf("Parent\n");
+    else if(!pid)
+        printf("Child\n");
+    else if(pid == -1)
+        perror("fork");
+
+    int fw=open("redirectedSTDOUT.txt", O_APPEND|O_WRONLY);
+    dup2(fw,1);
+    close(fw);
+    int ret = execv(command[0], command);
+    if (ret == -1)
+    {
+        perror("execvp");
+    }
 
     va_end(args);
 
